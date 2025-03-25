@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ✅ 사용자 정의 CSS 파일 (main.css) -->
+  <link rel="stylesheet" href="/public/main.css">
+
+<!-- ✅ Bootstrap 5.3.3 CSS 추가 (디자인 스타일 적용) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+  rel="stylesheet" 
+  integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
+  crossorigin="anonymous">
+
+<!-- ✅ Google Fonts: 폰트 추가 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+
+  <title><%= title %></title>
+</head>
+<body>
+  <!-- 부트스트랩에서 가져온 navar바 -->
+  <nav class="navbar bg-dark" >
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#" id="app">
+        <img src="https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bW92aWV8ZW58MHx8MHx8fDA%3D" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
+        간편 영화 후기
+      </a>
+    </div>
+  </nav>
+
+
+
+  <div class="container">
+    <div class="p-5 mb-4 bg-light rounded-3" id="temp_jumbortron" >
+      <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">영화리뷰 사이트를 만들었습니다.</h1>
+        <p class="col-md-8 mx-auto fs-4">여러분의 소중한 후기 부탁드려요~</p>
+        <hr id="container-hr">
+        <button class="btn btn-danger btn-lg" type="button" onclick="dbkey()">DB키 받으러 가기</button>
+      </div>
+    </div>
+  </div>
+
+<!-- 카드 섹션(카드들 담는 컨테이너) -->
+<div class="container", id ="cardcontainer">
+  <!-- 각각의 카드설정 3개씩나오게 갭 4 -->
+  <div class="row mt-4 g-4" id="cardset">
+    
+  </div> 
+</div>
+
+<!-- MODAL -->
+<div class="modal" tabindex="-1" id="review_modal" >
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">리뷰</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalInput">
+        <p>모달 리스트로 들어갈곳 좀이있다 지워</p>
+      </div>
+      <div class="modal-footer">
+        
+        <input type="text" id="ReviewField"  placeholder="여기에 입력하세요">
+        <button type="button" class="btn btn-primary" onclick="ReviewAdd()"> 리뷰 입력</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- jquery -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+  crossorigin="anonymous"></script>
+</body>
+
+<script>
+  // html 로드 된후 실행 뒤에 함수실행행 
+  document.addEventListener("DOMContentLoaded",function apiconnect_orapiload(){
+    fetch("https://api.themoviedb.org/3/movie/popular?api_key=10923b261ba94d897ac6b81148314a3f&page=1")
+      .then(response => response.json()) // API 응답이 오면 JSON으로 변환
+      .then(data => {
+        console.log(data)
+        let dataLists=data.results;
+        console.log(dataLists);
+
+        const cardset = document.getElementById("cardset");  //html 을통해 받아옴 html 과 공유되는것 같음음
+
+        for(let i=0;i<dataLists.length;i++){
+          const card=document.createElement("div");
+          card.classList.add("col-md-4");
+          card.innerHTML=`
+            <div class="card p-3 cardin d-flex justify-content-center">
+              <img src= "${'https://image.tmdb.org/t/p/w500' +dataLists[i].poster_path}" alt="NO image">
+              <h5 class="card-title">${dataLists[i].title}</h5>
+              <button type="button" class="btn btn-success btn-width" onclick="review_modal(${dataLists[i].id})">리뷰 보기</button>
+            </div>
+          `
+          cardset.appendChild(card);
+        }
+      }); // 변환된 JSON 데이터 출력 /*이시점 부터 api 데이터 사용 가가능*/   
+  }
+  
+  )  
+  function dbkey(){
+    alert("nokey");
+  }
+  function review_modal(id){
+    $(".modal-body").html('')
+    $('#review_modal').modal('show');  // 모달을 보이게 하기
+    console.log(id);
+
+    //data read id 존재여부 체크 
+    fetch('/jang/data/read/reviews_id', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'  // JSON 데이터를 보내기 위한 헤더
+    },
+    body: JSON.stringify({ movie_id: id })  // body에 review_id를 포함해서 보냄
+})
+.then(response => response.json())  // 응답을 JSON 형식으로 파싱
+.then(data => {
+    if (data.success === 404) {
+        //(아이디가 없는 경우) 
+        console.log('아이디 없음:', data.message);  // 결과 메시지 출력
+        //아이디 생성 
+          fetch("/jang/review/create",{
+    method: "POST", // POST 요청 방식
+    headers: {
+            "Content-Type": "application/json"  // JSON 형식으로 보내기
+        },
+     body: JSON.stringify({
+        movie_id : id,  // 영화 ID (변수 `target`이 필요)
+        review : null  // 사용자 입력 받은 리뷰 내용
+        })
+   }).then(response => response.json())  // 응답을 JSON 형태로 파싱
+    .then(data => {
+        console.log("서버 응답:", data);  // 서버에서 받은 응답 출력
+    })
+    } 
+    else {
+        //(아이디가 존재하는 경우)
+        console.log('아이디 존재:', data.data);  // 결과 데이터 출력 
+
+    }
+    
+})
+  }
+  function ReviewAdd(id){ //update
+    const target= id;
+   const inputText=document.getElementById("ReviewField").value;
+   document.getElementById("ReviewField").value="";
+   console.log(inputText); //입력시 확인용
+   fetch("/jang/review/create",{
+    method: "POST", // POST 요청 방식
+    headers: {
+            "Content-Type": "application/json"  // JSON 형식으로 보내기
+        },
+     body: JSON.stringify({
+        movie_id : target,  // 영화 ID (변수 `target`이 필요)
+        review : inputText  // 사용자 입력 받은 리뷰 내용
+        })
+   }).then(response => response.json())  // 응답을 JSON 형태로 파싱
+    .then(data => {
+        console.log("서버 응답:", data);  // 서버에서 받은 응답 출력
+    })
+  }
+</script>
+</html>
