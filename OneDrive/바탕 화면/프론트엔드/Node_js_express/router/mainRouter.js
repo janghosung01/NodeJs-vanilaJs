@@ -65,14 +65,26 @@ router.post("/postapi",function(req,res){
 // })
 
 
+router.post("/data/update",function(req,res){
+    let target_id=req.body.movie_id;
+    let target_review=req.body.review;
+    db.reviews.update({review:target_review},{where:{movie_id:target_id}}).then(function(result){
+        res.send({success:200,target_id,target_review}); 
+        console.log(target_id);
+    })
+})
+
 router.post("/review/create",function(req,res){
     let movie_id=req.body.movie_id;
     let review=req.body.review;
+    console.log("id는 :",movie_id);
+    console.log("리뷰는 :",review);
     db.reviews.create({movie_id:movie_id,review:review}).then(function(result){
-        res.send({success:200});
+        res.send({success:200, message:"아이디 생성",data:result});
         console.log(req.body);
     })
 })
+
 
 router.post("/data/read/all", function(req,res) { //모든데이터베이스
     db.reviews.findAll().then(function(result){
@@ -86,7 +98,7 @@ router.post("/data/read/reviews_id", function(req,res) {
     let review_id=req.body.movie_id;
     db.reviews.findOne({where:{movie_id:review_id}}).then(function(result){
         if (result) {
-            res.send({ success: 200, message: "아이디 존재", data: result });
+            res.send({ success: 200, message: "아이디 존재",review:result.review });
         } else {
             res.send({ success: 404, message: "아이디 없음" });
         }

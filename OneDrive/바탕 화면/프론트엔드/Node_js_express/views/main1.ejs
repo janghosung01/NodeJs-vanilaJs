@@ -53,21 +53,20 @@
 </div>
 
 <!-- MODAL -->
-<div class="modal" tabindex="-1" id="review_modal" >
+<div class="modal" tabindex="-1" id="review_modal">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">리뷰</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body" id="modalInput">
+      <div class="modal-body" id="reviewsInput">
         <p>모달 리스트로 들어갈곳 좀이있다 지워</p>
       </div>
-      <div class="modal-footer">
-        
-        <input type="text" id="ReviewField"  placeholder="여기에 입력하세요">
-        <button type="button" class="btn btn-primary" onclick="ReviewAdd()"> 리뷰 입력</button>
-      </div>
+        <div class="modal-footer" id="modalId">   
+            <!-- <input type="text" id="ReviewField"  placeholder="여기에 입력하세요">
+            <button type="button" class="btn btn-primary" onclick="ReviewAdd()"> 리뷰 입력</button> -->
+        </div>
     </div>
   </div>
 </div>
@@ -108,11 +107,12 @@
   function dbkey(){
     alert("nokey");
   }
-  function review_modal(id){
-    $(".modal-body").html('')
-    $('#review_modal').modal('show');  // 모달을 보이게 하기
-    console.log(id);
 
+
+
+  function review_modal(id){
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    let reviewText=null;
     //data read id 존재여부 체크 
     fetch('/jang/data/read/reviews_id', {
     method: 'POST',
@@ -120,14 +120,14 @@
         'Content-Type': 'application/json'  // JSON 데이터를 보내기 위한 헤더
     },
     body: JSON.stringify({ movie_id: id })  // body에 review_id를 포함해서 보냄
-})
-.then(response => response.json())  // 응답을 JSON 형식으로 파싱
-.then(data => {
-    if (data.success === 404) {
-        //(아이디가 없는 경우) 
-        console.log('아이디 없음:', data.message);  // 결과 메시지 출력
-        //아이디 생성 
-          fetch("/jang/review/create",{
+    })
+    .then(response => response.json())  // 응답을 JSON 형식으로 파싱
+    .then(data => {
+      if (data.success === 404) {
+          //(아이디가 없는 경우) 
+          console.log('아이디 없음:', data.success);  // 결과 메시지 출력
+          //아이디 생성 
+            fetch("/jang/review/create",{
     method: "POST", // POST 요청 방식
     headers: {
             "Content-Type": "application/json"  // JSON 형식으로 보내기
@@ -137,30 +137,57 @@
         review : null  // 사용자 입력 받은 리뷰 내용
         })
    }).then(response => response.json())  // 응답을 JSON 형태로 파싱
-    .then(data => {
+    .then(data => { 
         console.log("서버 응답:", data);  // 서버에서 받은 응답 출력
     })
     } 
     else {
         //(아이디가 존재하는 경우)
-        console.log('아이디 존재:', data.data);  // 결과 데이터 출력 
-
+        console.log('아이디 존재:', data.message,data.review);  // 결과 데이터 출력 
+        reviewText=data.review;
     }
+  
     
+    
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 모달 내용을 동적으로 변경하기 위해 modalId 요소 가져오기
+    const modalId = document.getElementById("modalId");
+
+// 모달 안에 들어갈 요소 생성 (input과 button)
+const modalInput = document.createElement("div");
+document.getElementById("reviewsInput").innerHTML = "";
+if(reviewText){  
+document.getElementById("reviewsInput").innerHTML = `
+    <p>${reviewText}<p/>
+      `;
+    }
+// 리뷰 입력 필드와 버튼을 modalInput에 추가
+modalInput.innerHTML = `
+    <input type="text" id="ReviewField" placeholder="여기에 입력하세요">
+    <button type="button" class="btn btn-primary" onclick="ReviewAdd(${id})">리뷰 입력</button>
+`;
+// modalId에 modalInput을 추가
+modalId.innerHTML = '';  // 기존 내용 초기화
+modalId.appendChild(modalInput);
+
+// 부트스트랩 모달 띄우기
+const myModal = new bootstrap.Modal(document.getElementById('review_modal'));
+myModal.show();  // 모달을 보이게 하기
 })
   }
   function ReviewAdd(id){ //update
-    const target= id;
-   const inputText=document.getElementById("ReviewField").value;
-   document.getElementById("ReviewField").value="";
-   console.log(inputText); //입력시 확인용
-   fetch("/jang/review/create",{
+    console.log(id); //무비아이디 똑같은지 확인
+    
+    const inputText=document.getElementById("ReviewField").value;
+    document.getElementById("ReviewField").value="";
+    console.log(inputText); //입력시 확인용
+   fetch("/jang/data/update",{
     method: "POST", // POST 요청 방식
-    headers: {
+    headers: {  
             "Content-Type": "application/json"  // JSON 형식으로 보내기
         },
      body: JSON.stringify({
-        movie_id : target,  // 영화 ID (변수 `target`이 필요)
+        movie_id : id,  // 영화 ID (변수 `target`이 필요)
         review : inputText  // 사용자 입력 받은 리뷰 내용
         })
    }).then(response => response.json())  // 응답을 JSON 형태로 파싱

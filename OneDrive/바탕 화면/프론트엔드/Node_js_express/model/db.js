@@ -4,7 +4,7 @@
 
 
 var Sequelize=require("sequelize");
-var sequelize =new Sequelize("class","root","1127",{// table명, "root", 비밀번호
+var sequelize =new Sequelize("class","root","1127",{// table명, "root", mysql 비밀번호 
     host:"localhost",
     port:3306,
     dialect:"mysql",

@@ -10,7 +10,7 @@ module.exports=function(sequelize,DataTypes){
             type:DataTypes.STRING(250)
         },
         review:{
-            type:DataTypes.TEXT,
+            type:DataTypes.JSON,
             allowNull: true
         }
     })
